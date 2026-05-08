@@ -574,6 +574,7 @@
     let stepCenters = [];
     let activeIndex = -1;
     let frameId = 0;
+    let visualFrameId = 0;
     let desktopEnabled = false;
     let progress = 0;
     let isPinned = false;
@@ -581,6 +582,8 @@
     let finishScrollDebt = 0;
     const scrollSensitivity = 12000;
     const finishReleaseThreshold = 950;
+
+    const getStageScale = () => clamp(timeline.clientWidth / baseTimelineWidth, 0.58, 1);
 
     const resetTilt = (shot) => {
       shot.style.setProperty("--vibe-tilt-x", "0deg");
@@ -595,30 +598,42 @@
       }
 
       board.style.setProperty("--vibe-route-length", routeLength.toFixed(2));
-      board.style.setProperty("--vibe-route-offset", routeLength.toFixed(2));
+      board.style.setProperty("--vibe-route-offset", (routeLength * (1 - clamp(progress, 0, 1))).toFixed(2));
     };
 
+    const hasTimelineLayout = () => timeline.offsetWidth > 0 && timeline.offsetHeight > 0;
+
     const syncStepRouteProgresses = () => {
+      if (!hasTimelineLayout()) {
+        stepCenters = [];
+        stepRouteProgresses = [];
+        return false;
+      }
+
+      const stageScale = getStageScale();
+
       stepCenters = steps.map((step) => {
         const circle = step.querySelector(".step-circle");
+        const routeSpaceLeft = step.offsetLeft / stageScale;
+        const routeSpaceTop = step.offsetTop / stageScale;
 
         if (!circle) {
           return {
-            x: step.offsetLeft + (step.offsetWidth / 2),
-            y: step.offsetTop + (step.offsetHeight / 2)
+            x: routeSpaceLeft + (step.offsetWidth / 2),
+            y: routeSpaceTop + (step.offsetHeight / 2)
           };
         }
 
         return {
-          x: step.offsetLeft + circle.offsetLeft + (circle.offsetWidth / 2),
-          y: step.offsetTop + circle.offsetTop + (circle.offsetHeight / 2),
+          x: routeSpaceLeft + circle.offsetLeft + (circle.offsetWidth / 2),
+          y: routeSpaceTop + circle.offsetTop + (circle.offsetHeight / 2),
           radius: Math.min(circle.offsetWidth, circle.offsetHeight) / 2
         };
       });
 
       if (!routeLength || routeLength <= 1) {
         stepRouteProgresses = steps.map((_, index) => index / Math.max(1, steps.length - 1));
-        return;
+        return true;
       }
 
       const sampleCount = 2400;
@@ -627,66 +642,85 @@
         const point = routeMain.getPointAtLength(length);
         return { length, x: point.x, y: point.y };
       });
-      const findRouteProgressAtCircle = (center) => {
+      const findRouteProgressAtCircle = (center, minimumProgress = 0) => {
         const radius = Math.max(12, (center.radius ?? 0) - 2);
+        const minimumLength = routeLength * minimumProgress;
+        let isInsideCircle = false;
+        let closestInsideLength = 0;
+        let closestInsideDistance = Infinity;
 
         for (let sampleIndex = 1; sampleIndex < routeSamples.length; sampleIndex += 1) {
-          const previous = routeSamples[sampleIndex - 1];
           const current = routeSamples[sampleIndex];
-          const previousDistance = Math.hypot(previous.x - center.x, previous.y - center.y);
+          if (current.length < minimumLength) continue;
+
           const currentDistance = Math.hypot(current.x - center.x, current.y - center.y);
 
-          if (previousDistance > radius && currentDistance <= radius) {
-            const span = Math.max(0.0001, previousDistance - currentDistance);
-            const blend = clamp((previousDistance - radius) / span, 0, 1);
-            const length = previous.length + ((current.length - previous.length) * blend);
-
-            return length / routeLength;
-          }
-
           if (currentDistance <= radius) {
-            return current.length / routeLength;
+            isInsideCircle = true;
+
+            if (currentDistance < closestInsideDistance) {
+              closestInsideDistance = currentDistance;
+              closestInsideLength = current.length;
+            }
+          } else if (isInsideCircle) {
+            return closestInsideLength / routeLength;
           }
         }
 
-        return null;
+        return isInsideCircle ? closestInsideLength / routeLength : null;
       };
-      const findRouteProgressAtY = (targetY) => {
-        const firstSample = routeSamples[0];
-        const lastSample = routeSamples[routeSamples.length - 1];
+      const findNearestRouteProgressAfterNodeLevel = (center, minimumProgress = 0) => {
+        let nearestSample = null;
+        let nearestDistance = Infinity;
 
-        if (targetY <= firstSample.y) return 0;
-        if (targetY >= lastSample.y) return 1;
+        routeSamples.forEach((sample) => {
+          const sampleProgress = sample.length / routeLength;
+          if (sampleProgress <= minimumProgress || sample.y < center.y) return;
 
-        for (let sampleIndex = 1; sampleIndex < routeSamples.length; sampleIndex += 1) {
-          const previous = routeSamples[sampleIndex - 1];
-          const current = routeSamples[sampleIndex];
-          const crossesTargetY = previous.y <= targetY && current.y >= targetY;
-
-          if (crossesTargetY) {
-            const spanY = Math.max(0.0001, current.y - previous.y);
-            const blend = clamp((targetY - previous.y) / spanY, 0, 1);
-            const length = previous.length + ((current.length - previous.length) * blend);
-
-            return length / routeLength;
+          const distance = Math.hypot(sample.x - center.x, sample.y - center.y);
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestSample = sample;
           }
+        });
+
+        if (!nearestSample) {
+          return {
+            distance: Infinity,
+            progress: 1
+          };
         }
 
-        return 1;
+        return {
+          distance: nearestDistance,
+          progress: nearestSample.length / routeLength
+        };
       };
 
-      stepRouteProgresses = stepCenters.map((center) => {
-        return findRouteProgressAtCircle(center) ?? findRouteProgressAtY(center.y);
-      });
+      stepRouteProgresses = stepCenters.reduce((progresses, center, index) => {
+        const previous = index > 0 ? progresses[index - 1] : 0;
+        let routeProgress = findRouteProgressAtCircle(center, previous);
 
-      stepRouteProgresses.forEach((routeProgress, index) => {
-        const previous = index > 0 ? stepRouteProgresses[index - 1] : 0;
-        stepRouteProgresses[index] = clamp(
+        if (routeProgress === null) {
+          const fallback = findNearestRouteProgressAfterNodeLevel(center, previous);
+          const missDistance = Math.max(0, fallback.distance - (center.radius ?? 0));
+          const fallbackDelay = index > 1
+            ? Math.min(0.045, (missDistance * 1.85) / routeLength)
+            : 0;
+
+          routeProgress = fallback.progress + fallbackDelay;
+        }
+
+        progresses.push(clamp(
           Math.max(routeProgress, previous + (index > 0 ? 0.001 : 0)),
           0,
           1
-        );
-      });
+        ));
+
+        return progresses;
+      }, []);
+
+      return true;
     };
 
     const getStepCenterY = (index) => {
@@ -722,6 +756,16 @@
       }
 
       return progressStops.length - 1;
+    };
+
+    const getDisplayedRouteProgress = () => {
+      const computedOffset = Number.parseFloat(getComputedStyle(routeMain).strokeDashoffset);
+
+      if (!Number.isFinite(computedOffset) || routeLength <= 0) {
+        return clamp(progress, 0, 1);
+      }
+
+      return clamp(1 - (computedOffset / routeLength), 0, 1);
     };
 
     const setShotStack = (focusPosition, index) => {
@@ -771,7 +815,7 @@
       });
     };
 
-    const setActive = (index, focusPosition) => {
+    const setActive = (index) => {
       if (index === activeIndex) return;
       activeIndex = index;
 
@@ -791,7 +835,6 @@
       const isAiPhase = activeIndex >= 4;
       board.classList.toggle("is-ai-phase", isAiPhase);
       header?.classList.toggle("is-ai-phase", isAiPhase);
-      setShotStack(focusPosition, activeIndex);
     };
 
     const syncPinMetrics = () => {
@@ -805,22 +848,59 @@
       return { rect, pinTop };
     };
 
-    const render = () => {
-      const stageScale = clamp(timeline.clientWidth / baseTimelineWidth, 0.58, 1);
+    const syncActiveState = (activeRouteProgress = getDisplayedRouteProgress()) => {
       const progressStops = stepRouteProgresses.length === steps.length
         ? stepRouteProgresses
         : steps.map((_, stepIndex) => stepIndex / Math.max(1, steps.length - 1));
       const maxFocusPosition = Math.max(0, steps.length - 1);
-      const routeProgress = clamp(progress, 0, 1);
       const focusPosition = clamp(
-        getFocusPositionFromRouteProgress(routeProgress, progressStops),
+        getFocusPositionFromRouteProgress(activeRouteProgress, progressStops),
         0,
         maxFocusPosition
       );
-      const lowerIndex = Math.floor(focusPosition);
+      const index = getTouchedStepIndex(activeRouteProgress, progressStops);
+      const shotFocusPosition = index >= 0 ? index : 0;
+
+      steps.forEach((step, stepIndex) => {
+        const distance = Math.abs(stepIndex - focusPosition);
+        const opacity = clamp(1 - distance * 0.58, 0.34, 1);
+        step.style.setProperty("--vibe-step-opacity", opacity.toFixed(3));
+        step.style.setProperty("--vibe-step-scale", "1");
+      });
+
+      setActive(index);
+      setShotStack(shotFocusPosition, index);
+    };
+
+    const scheduleVisualSync = () => {
+      if (visualFrameId) return;
+
+      visualFrameId = window.requestAnimationFrame(() => {
+        visualFrameId = 0;
+        if (!desktopEnabled || stepRouteProgresses.length !== steps.length) return;
+
+        const displayedProgress = getDisplayedRouteProgress();
+        syncActiveState(displayedProgress);
+
+        if (Math.abs(displayedProgress - progress) > 0.001) {
+          scheduleVisualSync();
+        }
+      });
+    };
+
+    const render = () => {
+      if (stepRouteProgresses.length !== steps.length && !syncStepRouteProgresses()) return;
+
+      const stageScale = getStageScale();
+      const routeProgress = clamp(progress, 0, 1);
+      const routeFocusPosition = clamp(
+        getFocusPositionFromRouteProgress(routeProgress, stepRouteProgresses),
+        0,
+        Math.max(0, steps.length - 1)
+      );
+      const lowerIndex = Math.floor(routeFocusPosition);
       const upperIndex = Math.min(steps.length - 1, lowerIndex + 1);
-      const blend = focusPosition - lowerIndex;
-      const index = getTouchedStepIndex(routeProgress, progressStops);
+      const blend = routeFocusPosition - lowerIndex;
       let activeCenter = getStepCenterY(lowerIndex);
 
       try {
@@ -834,19 +914,11 @@
       const trackY = (timeline.clientHeight * 0.52) - (activeCenter * stageScale);
       const routeOffset = Math.max(0, routeLength * (1 - routeProgress));
 
-      steps.forEach((step, stepIndex) => {
-        const distance = Math.abs(stepIndex - focusPosition);
-        const opacity = clamp(1 - distance * 0.58, 0.34, 1);
-        step.style.setProperty("--vibe-step-opacity", opacity.toFixed(3));
-        step.style.setProperty("--vibe-step-scale", "1");
-      });
-
       board.style.setProperty("--vibe-stage-scale", stageScale.toFixed(4));
       board.style.setProperty("--vibe-progress", progress.toFixed(4));
       board.style.setProperty("--vibe-route-offset", routeOffset.toFixed(2));
       timeline.style.setProperty("--vibe-track-y", `${trackY.toFixed(1)}px`);
-      setActive(index, focusPosition);
-      setShotStack(focusPosition, index);
+      scheduleVisualSync();
     };
 
     const releasePin = () => {
@@ -870,6 +942,11 @@
       hasCompletedForward = false;
       finishScrollDebt = 0;
       activeIndex = -1;
+
+      if (visualFrameId) {
+        window.cancelAnimationFrame(visualFrameId);
+        visualFrameId = 0;
+      }
 
       steps.forEach((step) => {
         step.classList.remove("is-active", "is-before", "is-after");
@@ -1019,16 +1096,24 @@
       shot.addEventListener("pointerleave", () => resetTilt(shot));
     });
 
+    const syncMeasurementsAndUpdate = () => {
+      syncRouteLength();
+      syncStepRouteProgresses();
+      scheduleUpdate();
+    };
+
     syncRouteLength();
     syncStepRouteProgresses();
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("wheel", handleWheel, { passive: false });
-    window.addEventListener("resize", () => {
-      syncRouteLength();
-      syncStepRouteProgresses();
-      scheduleUpdate();
-    }, { passive: true });
+    window.addEventListener("resize", syncMeasurementsAndUpdate, { passive: true });
     desktopQuery.addEventListener?.("change", scheduleUpdate);
+    if ("ResizeObserver" in window) {
+      const layoutObserver = new ResizeObserver(syncMeasurementsAndUpdate);
+      layoutObserver.observe(board);
+      layoutObserver.observe(timeline);
+      board.vibeProcessLayoutObserver = layoutObserver;
+    }
     scheduleUpdate();
   };
 
