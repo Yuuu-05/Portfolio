@@ -16407,6 +16407,110 @@ body.is-home-module-transitioning {
   --copy-gap: 36px;
 }
 
+/* Cross-page typography hierarchy alignment. */
+body:is(.why-gap-page, .user-requirements-page, .iteration-page, .implementation-page, .evaluation-page).process-page {
+  --process-display-font: Impact, "Arial Black", sans-serif;
+  --process-heading-font: Arial, sans-serif;
+  --process-copy-font: Arial, sans-serif;
+  --process-copy-weight: 500;
+  --process-heading-weight: 700;
+  --process-label-weight: 700;
+}
+
+body:is(.why-gap-page, .user-requirements-page, .iteration-page, .implementation-page, .evaluation-page).process-page
+  :is(.page-title-card h1, .section-title) {
+  font-family: var(--process-display-font);
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+body:is(.why-gap-page, .user-requirements-page, .iteration-page, .implementation-page, .evaluation-page).process-page
+  :is(
+    .page-id,
+    .section-kicker,
+    .board-label,
+    .card-label,
+    .tag,
+    .phase-label,
+    .task-number,
+    .source-number,
+    .reference-index,
+    .feedback-source-badge,
+    .refinement-number,
+    .decision-pill,
+    .quick-link,
+    .external-card strong
+  ) {
+  font-family: var(--process-heading-font);
+  font-weight: var(--process-label-weight);
+  letter-spacing: 0.02em;
+}
+
+body:is(.why-gap-page, .user-requirements-page, .iteration-page, .implementation-page, .evaluation-page).process-page
+  :is(
+    .intro-panel h3,
+    .info-card h3,
+    .research-card h3,
+    .evidence-card h3,
+    .sketch-card h3,
+    .option-card h4,
+    .requirement-summary-card h3,
+    .source-group-header h4,
+    .source-card h5,
+    .gap-point-group h4,
+    .evolution-copy h3,
+    .evolution-lists h4,
+    .brand-direction-copy h3,
+    .evaluation-task-card h3,
+    .measurement-card h4,
+    .boundary-card h3,
+    .refinement-case h3,
+    .refinement-observation h4,
+    .refinement-detail-grid h4,
+    .ai-review-card h4,
+    .ai-review-card h5,
+    .ai-technical-reflection-card h3,
+    .ethical-reflection-intro h3,
+    .ethical-reflection-point h4,
+    .milestone-copy h3,
+    .milestone-copy h3 span
+  ) {
+  font-family: var(--process-heading-font);
+  font-weight: var(--process-heading-weight);
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+body:is(.why-gap-page, .user-requirements-page, .iteration-page, .implementation-page, .evaluation-page).process-page
+  :is(
+    p,
+    li,
+    td,
+    th,
+    figcaption,
+    .body-font,
+    .compact-list,
+    .source-card p,
+    .ieee-reference-list li,
+    .refinement-case p,
+    .ai-review-card p,
+    .ai-technical-reflection-card p,
+    .ai-technical-reflection-card li,
+    .ethical-reflection-point p,
+    .milestone-copy p
+  ) {
+  font-family: var(--process-copy-font);
+  font-weight: var(--process-copy-weight);
+  line-height: 1.66;
+  letter-spacing: 0;
+}
+
+body:is(.why-gap-page, .user-requirements-page, .iteration-page, .implementation-page, .evaluation-page).process-page
+  :is(strong, b, th, .reference-index, figcaption strong) {
+  font-family: var(--process-heading-font);
+  font-weight: 700;
+}
+
 @media (max-width: 900px) {
   .timeline-scroll {
     overflow-x: auto;
