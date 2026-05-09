@@ -15920,6 +15920,150 @@ body.is-home-module-transitioning {
   color: var(--timeline-muted);
 }
 
+/* Readability adjustments for dense process copy. */
+#problem-space .problem-grid .info-card h3,
+#high-fi .info-card h3,
+#core-features .info-card h3,
+.why-gap-page .gap-analysis-grid .research-card h3,
+.evolution-copy h3 {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+#problem-space .problem-grid .info-card h3,
+#high-fi .info-card h3,
+#core-features .info-card h3 {
+  font-size: clamp(1.42rem, 1.85vw, 2rem);
+  line-height: 1.12;
+}
+
+#problem-space .problem-grid .info-card p,
+#high-fi .info-card p,
+#core-features .info-card p,
+#problem-space .problem-grid .info-card p strong,
+#core-features .info-card p strong {
+  font-family: Arial, sans-serif;
+}
+
+#problem-space .problem-grid .info-card p,
+#high-fi .info-card p,
+#core-features .info-card p {
+  font-size: 1.04rem;
+  line-height: 1.68;
+  font-weight: 500;
+}
+
+#problem-space .problem-grid .info-card p strong,
+#core-features .info-card p strong {
+  font-weight: 700;
+}
+
+.why-gap-page .gap-point-group h4,
+.evolution-lists h4,
+:is(.evaluation-page, .why-gap-page) .source-group-header h4,
+:is(.evaluation-page, .why-gap-page) .source-card h5,
+.milestone-copy h3,
+.milestone-copy h3 span {
+  font-family: Arial, sans-serif;
+  letter-spacing: 0;
+}
+
+.why-gap-page .gap-analysis-grid .research-card h3 {
+  font-size: clamp(1.28rem, 1.65vw, 1.75rem);
+  line-height: 1.18;
+}
+
+.why-gap-page .gap-point-group h4 {
+  font-size: 1rem;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.why-gap-page .gap-point-group li,
+:is(.evaluation-page, .why-gap-page) .references-intro p,
+:is(.evaluation-page, .why-gap-page) .source-card p,
+:is(.evaluation-page, .why-gap-page) .ieee-reference-list li {
+  font-family: Arial, sans-serif;
+  font-weight: 500;
+}
+
+.why-gap-page .gap-point-group li {
+  font-size: 1.02rem;
+  line-height: 1.62;
+}
+
+:is(.evaluation-page, .why-gap-page) .source-type {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+:is(.evaluation-page, .why-gap-page) .source-card h5 {
+  font-size: clamp(1.04rem, 1.18vw, 1.2rem);
+  line-height: 1.34;
+  font-weight: 700;
+}
+
+:is(.evaluation-page, .why-gap-page) .source-card p,
+:is(.evaluation-page, .why-gap-page) .ieee-reference-list li {
+  font-size: 1rem;
+  line-height: 1.66;
+}
+
+:is(.evaluation-page, .why-gap-page) .reference-index {
+  font-weight: 700;
+}
+
+.sketch-evidence figcaption,
+.implementation-showcase .asset-figure figcaption,
+.implementation-showcase .highfi-overview-caption {
+  font-family: Arial, sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.62;
+  font-weight: 500;
+}
+
+.sketch-evidence figcaption strong,
+.implementation-showcase .asset-figure figcaption strong,
+.implementation-showcase .highfi-overview-caption strong {
+  font-weight: 700;
+}
+
+.evolution-lists h4 {
+  font-size: 1.08rem;
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.evolution-lists .compact-list {
+  font-family: Arial, sans-serif;
+  font-size: 1.04rem;
+  line-height: 1.68;
+  font-weight: 500;
+}
+
+.milestone-copy h3 {
+  font-size: 17px;
+  line-height: 1.16;
+  font-weight: 700;
+}
+
+.milestone-copy h3 span {
+  font-size: 14px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.milestone-copy p {
+  font-family: Arial, sans-serif;
+  font-size: 11.5px;
+  line-height: 1.34;
+  font-weight: 500;
+}
+
 .milestone:hover::before,
 .milestone:focus-within::before,
 .milestone.is-active::before {
