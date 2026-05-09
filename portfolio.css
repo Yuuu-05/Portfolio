@@ -16230,6 +16230,79 @@ body.is-home-module-transitioning {
   font-weight: 500;
 }
 
+.why-gap-page .formal-references .ieee-reference-list li {
+  grid-template-columns: 58px minmax(0, 1fr);
+  color: rgba(255, 255, 255, 0.92);
+  font-family: Arial, sans-serif;
+  font-size: 1.08rem;
+  line-height: 1.78;
+  font-weight: 400;
+}
+
+.why-gap-page .formal-references .ieee-reference-list li > span:not(.reference-index),
+.why-gap-page .formal-references .ieee-reference-list li em,
+.why-gap-page .formal-references .ieee-reference-list li a {
+  font-family: Arial, sans-serif;
+  font-weight: 400;
+}
+
+.why-gap-page .formal-references .reference-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  min-width: 42px;
+  height: 34px;
+  padding: 0 10px;
+  color: #000000;
+  background: var(--hold-cyan);
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0 #000000;
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.evaluation-page #refinement .refinement-case h3,
+.evaluation-page #refinement .refinement-number,
+.evaluation-page #refinement .feedback-source-badge,
+.evaluation-page #refinement .refinement-observation h4,
+.evaluation-page #refinement .refinement-detail-grid h4 {
+  font-family: Arial, sans-serif;
+  letter-spacing: 0;
+}
+
+.evaluation-page #refinement .refinement-case h3 {
+  font-size: clamp(1.48rem, 2.25vw, 2.35rem);
+  line-height: 1.16;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.evaluation-page #refinement .refinement-number {
+  font-size: 1rem;
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.evaluation-page #refinement .feedback-source-badge {
+  font-size: 0.92rem;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.evaluation-page #refinement .refinement-observation h4,
+.evaluation-page #refinement .refinement-detail-grid h4 {
+  font-size: clamp(1.08rem, 1.22vw, 1.24rem);
+  line-height: 1.22;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
 .milestone:hover::before,
 .milestone:focus-within::before,
 .milestone.is-active::before {
