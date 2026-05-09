@@ -4344,7 +4344,6 @@ body:is(
   color: var(--pure-white);
   border: 4px solid var(--persona-border);
   text-align: left;
-  cursor: pointer;
   filter: drop-shadow(8px 8px 0 var(--persona-secondary));
   transition: transform 0.14s cubic-bezier(0.22, 1.2, 0.35, 1), border-color 0.1s linear, filter 0.1s linear;
 }
@@ -4374,7 +4373,7 @@ body:is(
 }
 
 .persona-avatar-card:hover,
-.persona-avatar-card:focus-visible,
+.persona-avatar-card:focus-within,
 .persona-avatar-card.is-active {
   border-color: var(--persona-accent);
   transform: translate(-5px, -6px) rotate(-1deg);
@@ -4383,7 +4382,7 @@ body:is(
 }
 
 .persona-avatar-card:hover::after,
-.persona-avatar-card:focus-visible::after,
+.persona-avatar-card:focus-within::after,
 .persona-avatar-card.is-active::after {
   background: var(--hold-yellow);
   box-shadow: 5px 5px 0 var(--pure-white);
@@ -4418,7 +4417,7 @@ body:is(
 }
 
 .persona-avatar-card:hover .persona-avatar-frame img,
-.persona-avatar-card:focus-visible .persona-avatar-frame img,
+.persona-avatar-card:focus-within .persona-avatar-frame img,
 .persona-avatar-card.is-active .persona-avatar-frame img {
   transform: scale(1.05) rotate(1deg);
 }
@@ -4445,14 +4444,34 @@ body:is(
 }
 
 .persona-avatar-cta {
+  --bg: #e74c3c;
+  --text-color: #fff;
+  position: relative;
+  top: 0;
   justify-self: start;
-  display: inline-block;
-  background: var(--persona-accent);
-  color: var(--bg-black);
-  padding: 6px 14px;
-  font-size: 1rem;
-  letter-spacing: 0.1em;
+  width: 150px;
+  border: none;
+  background: var(--bg);
+  color: var(--text-color);
+  padding: 1em;
+  font-weight: bold;
   text-transform: uppercase;
+  transition: 0.2s;
+  border-radius: 5px;
+  opacity: 0.8;
+  letter-spacing: 1px;
+  box-shadow: #c0392b 0px 7px 2px, #000 0px 8px 5px;
+  cursor: pointer;
+}
+
+.persona-avatar-cta:hover,
+.persona-avatar-cta:focus-visible {
+  opacity: 1;
+}
+
+.persona-avatar-cta:active {
+  top: 4px;
+  box-shadow: #c0392b 0px 3px 2px, #000 0px 3px 5px;
 }
 
 .persona-detail {
@@ -8978,14 +8997,16 @@ body:is(.why-gap-page, .user-requirements-page, .iteration-page, .implementation
 .back-home,
 .page-link,
 .action-btn,
-.persona-avatar-card {
+.persona-avatar-card,
+.persona-avatar-cta {
   -webkit-tap-highlight-color: transparent;
 }
 
 .back-home:focus-visible,
 .page-link:focus-visible,
 .action-btn:focus-visible,
-.persona-avatar-card:focus-visible {
+.persona-avatar-card:focus-visible,
+.persona-avatar-cta:focus-visible {
   outline: 3px solid var(--hold-cyan);
   outline-offset: 4px;
 }

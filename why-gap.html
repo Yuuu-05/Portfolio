@@ -389,8 +389,6 @@
         secondary: "var(--punk-red)",
         panel: "var(--hold-yellow)",
         border: "var(--pure-white)",
-        actionLabel: "Analyze",
-        actionAlert: "Opening Li Wen persona file.",
         quote: "I want enough information to solve the route myself, not constant instructions.",
         tags: ["Accessible Mode", "Audio Cues"],
         panels: [
@@ -412,8 +410,6 @@
         secondary: "var(--helper-orange)",
         panel: "var(--hold-yellow)",
         border: "var(--helper-teal)",
-        actionLabel: "Calibrate",
-        actionAlert: "Opening Lance assistant setup flow.",
         quote: "I want to support when needed, not become the entire guidance system.",
         tags: ["Setup Support", "Safety Backup"],
         panels: [
@@ -455,7 +451,7 @@
     `;
 
     const renderPersonaAvatar = (persona) => `
-      <button class="persona-avatar-card" type="button" data-persona-id="${escapeHTML(persona.id)}" aria-pressed="false" style="--persona-accent: ${persona.accent}; --persona-secondary: ${persona.secondary}; --persona-panel: ${persona.panel}; --persona-border: ${persona.border}; --persona-avatar-position: ${escapeHTML(persona.avatarPosition || "center center")};">
+      <article class="persona-avatar-card" style="--persona-accent: ${persona.accent}; --persona-secondary: ${persona.secondary}; --persona-panel: ${persona.panel}; --persona-border: ${persona.border}; --persona-avatar-position: ${escapeHTML(persona.avatarPosition || "center center")};">
         <span class="persona-avatar-frame">
           <img src="${escapeHTML(persona.image)}" alt="${escapeHTML(persona.name)} portrait">
         </span>
@@ -463,8 +459,8 @@
           <span class="persona-avatar-name">${escapeHTML(persona.name)}</span>
           <span class="persona-avatar-role">${escapeHTML(persona.role)}</span>
         </span>
-        <span class="persona-avatar-cta">Open File</span>
-      </button>
+        <button class="persona-avatar-cta" type="button" data-persona-id="${escapeHTML(persona.id)}" aria-pressed="false" aria-label="Open ${escapeHTML(persona.name)} persona file">Open File</button>
+      </article>
     `;
 
     const renderPersonaEntry = (group) => {
@@ -497,7 +493,6 @@
             </div>
             <div class="persona-subtitle">${escapeHTML(persona.role)}</div>
           </div>
-          <button class="action-btn" type="button" data-persona-alert="${escapeHTML(persona.actionAlert)}" aria-label="${escapeHTML(persona.actionLabel)} ${escapeHTML(persona.name)} persona file">${escapeHTML(persona.actionLabel)}</button>
         </div>
 
         <div class="persona-layout">
@@ -516,26 +511,17 @@
       <div class="persona-cards persona-detail persona-expanded-panel" data-persona-detail="personas" aria-live="polite"></div>
     `;
 
-    const bindPersonaActions = () => {
-      document.querySelectorAll("[data-persona-alert]").forEach((button) => {
-        button.addEventListener("click", () => alert(button.dataset.personaAlert));
-      });
-    };
-
     const showPersona = (personaId) => {
       const persona = personas.find((item) => item.id === personaId);
       if (!persona) return;
 
-      const activeButton = document.querySelector(`[data-persona-id="${personaId}"]`);
-      const isAlreadyOpen = activeButton && activeButton.classList.contains("is-active");
+      const activeButton = document.querySelector(`.persona-avatar-cta[data-persona-id="${personaId}"]`);
+      const activeCard = activeButton ? activeButton.closest(".persona-avatar-card") : null;
+      const isAlreadyOpen = activeCard && activeCard.classList.contains("is-active");
 
       if (isAlreadyOpen) {
-        document.querySelectorAll("[data-persona-detail]").forEach((detail) => {
-          detail.innerHTML = "";
-        });
-
-        activeButton.classList.remove("is-active");
-        activeButton.setAttribute("aria-pressed", "false");
+        const activeDetail = document.querySelector(`[data-persona-detail="personas"]`);
+        if (activeDetail) activeDetail.scrollIntoView({ behavior: "smooth", block: "start" });
         return;
       }
 
@@ -543,19 +529,18 @@
         detail.innerHTML = detail.dataset.personaDetail === "personas" ? renderPersonaCard(persona) : "";
       });
 
-      document.querySelectorAll("[data-persona-id]").forEach((button) => {
+      document.querySelectorAll(".persona-avatar-cta[data-persona-id]").forEach((button) => {
         const isActive = button.dataset.personaId === personaId;
-        button.classList.toggle("is-active", isActive);
+        const card = button.closest(".persona-avatar-card");
+        if (card) card.classList.toggle("is-active", isActive);
         button.setAttribute("aria-pressed", isActive ? "true" : "false");
       });
 
-      bindPersonaActions();
-
       const activeDetail = document.querySelector(`[data-persona-detail="personas"]`);
-      if (activeDetail) activeDetail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      if (activeDetail) activeDetail.scrollIntoView({ behavior: "smooth", block: "start" });
     };
 
-    document.querySelectorAll("[data-persona-id]").forEach((button) => {
+    document.querySelectorAll(".persona-avatar-cta[data-persona-id]").forEach((button) => {
       button.addEventListener("click", () => showPersona(button.dataset.personaId));
     });
   </script>
