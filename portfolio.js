@@ -40,6 +40,9 @@
   };
 
   const getSiteVisualScale = () => {
+    const bodyScale = Number.parseFloat(getComputedStyle(document.body).getPropertyValue("--site-visual-scale"));
+    if (Number.isFinite(bodyScale) && bodyScale > 0) return bodyScale;
+
     const scale = Number.parseFloat(getComputedStyle(root).getPropertyValue("--site-visual-scale"));
     return Number.isFinite(scale) && scale > 0 ? scale : 1;
   };
